@@ -4,37 +4,42 @@ import matplotlib.pyplot as plt
 from scipy.io import loadmat
 from scipy.fftpack import fft,dct,fftfreq,rfft
 import numpy as np
+import torch
 
-DATA_FOLDER = "real_signals_nifecgdb_2048_windows_07_Mar_102_abd3"
-ECG_OUTPUTS_TEST_REAL = os.path.join(os.path.dirname(os.path.realpath(__file__)), "Osher_TestReal/real_signals_nifecgdb_2048_windows_07_Mar_102_abd3")
+ECG_OUTPUTS_REAL = os.path.join(os.path.dirname(os.path.realpath(__file__)), "ECGOutputsTrainReal/NR_02/best_model_LOSS/ContTrain")
 
-dir_path = os.path.dirname(os.path.realpath(__file__))
-data_path = os.path.join(dir_path, ECG_OUTPUTS_TEST_REAL)
-
-# w = evt.widget
-# index = int(w.curselection()[0])
-# value = w.get(index)
-for filename in os.listdir(ECG_OUTPUTS_TEST_REAL):  # present the fecg outputs
-    if "label_ecg1" in filename and "2" in filename and not "mat" in filename:
+for filename in os.listdir(ECG_OUTPUTS_REAL):  # present the fecg outputs
+    #if "mecg1" in filename and "epoch" in filename:
+    if "ecg_all" in filename:
         print(filename)
-        path_label = os.path.join(ECG_OUTPUTS_TEST_REAL, filename)
         number_file = filename.index("g") + 1
-        end_path = filename[number_file:]
-        path = os.path.join(ECG_OUTPUTS_TEST_REAL, "ecg" + end_path)
-        mecg_label = os.path.join(ECG_OUTPUTS_TEST_REAL, "mecg" + end_path)
-        fecg_label = os.path.join(ECG_OUTPUTS_TEST_REAL, "fecg" + end_path)
-        fig, (ax1, ax2, ax3, ax4) = plt.subplots(4, 1)
-        ax1.plot(np.load(path)[0])
-        ax1.set_ylabel("ECG")
-        ax2.plot(np.load(path_label)[0])
-        ax2.set_ylabel("LABEL ECG")
-        ax3.plot(np.load(mecg_label)[0])
-        ax3.set_ylabel("MECG")
-        ax4.plot(np.load(fecg_label)[0])
-        ax4.set_ylabel("FECG")
-        fig.suptitle(filename)
+        end_path = filename[number_file + 4:]
+
+        ecg_all = os.path.join(ECG_OUTPUTS_REAL, "ecg_all" + end_path)
+        mecg_label = os.path.join(ECG_OUTPUTS_REAL, "label_m" + end_path)
+        mecg = os.path.join(ECG_OUTPUTS_REAL, "mecg" + end_path)
+        fecg = os.path.join(ECG_OUTPUTS_REAL, "fecg" + end_path)
+        fecg_shifted = os.path.join(ECG_OUTPUTS_REAL, "fecg_shifted" + end_path)
+
+        #fig, (ax1, ax2, ax3, ax4, ax5) = plt.subplots(5, 1)
+        fig, (ax1, ax2, ax3, ax4) = plt.subplots(4, 1, figsize=(15, 15))
+        ax1.plot(np.load(mecg_label))
+        ax1.set_ylabel("TECG (in)")
+        ax2.plot(np.load(mecg))
+        ax2.set_ylabel("MECG (out)")
+        ax3.plot(np.load(ecg_all))
+        ax3.set_ylabel("AECG (in)")
+        ax4.plot(np.load(fecg_shifted))
+        ax4.set_ylabel("FECG (out)")
+        #ax5.plot(np.load(fecg))
+        #ax5.set_ylabel("FECG")
         plt.show()
         plt.close()
+
+
+
+
+
 
 
 
