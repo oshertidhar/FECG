@@ -9,11 +9,9 @@ from model import *
 import dataloader
 from scipy.io import loadmat
 
-#SIMULATED_DATASET = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../AECG/simulated_signals_windows_l1to2_baseline_and_c0to2_11_Oct_22_Ch19_21_23")
-REAL_DATASET_TECG = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../AECG/real_signals_nifeadb_1024windows_NR_07_15_Dec_22/NR_07_ch0")
-REAL_DATASET_AECG = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../AECG/real_signals_nifeadb_1024windows_NR_07_15_Dec_22/NR_07_ch3")
+REAL_DATASET_TECG = os.path.join(os.path.dirname(os.path.realpath(__file__)), "real_signals_nifeadb_1024windows_NR_07_15_Dec_22/NR_07_ch0")
+REAL_DATASET_AECG = os.path.join(os.path.dirname(os.path.realpath(__file__)), "real_signals_nifeadb_1024windows_NR_07_15_Dec_22/NR_07_ch3")
 
-#LOSSES = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../MasterAECG+MECG/Losses/Ch_19_21_23/mecg2IsShiftedBy1NotNoised")
 LOSSES = os.path.join(os.path.dirname(os.path.realpath(__file__)), "Losses/Overfit/NR_07/Jan02")
 
 BATCH_SIZE = 32
