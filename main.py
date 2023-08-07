@@ -26,13 +26,11 @@ BEST_MODEL_ACC = 0.3660
 def main():
     pl.seed_everything(1234)
 
-    # (TODO) OVERFIT_REAL: uncomment ALL LINES BELOW after we replace to real data instead of simulated data
     real_dataset = dataloader.RealOverfitDataset(REAL_DATASET_AECG, REAL_DATASET_TECG)
     print("real_dataset",len(real_dataset))
     train_size_real = int(0.6 * len(real_dataset))
     val_size_real = int(0.2 * len(real_dataset))
     test_size_real = int(0.2 * len(real_dataset))
-    #train_dataset_real, val_dataset_real, test_dataset_real = torch.utils.data.random_split(real_dataset, [train_size_real, val_size_real,test_size_real])
     train_dataset_real = torch.utils.data.Subset(real_dataset, range(train_size_real))
     val_dataset_real = torch.utils.data.Subset(real_dataset, range(train_size_real, train_size_real + val_size_real))
     test_dataset_real = torch.utils.data.Subset(real_dataset, range(train_size_real + val_size_real, train_size_real + val_size_real + test_size_real))
