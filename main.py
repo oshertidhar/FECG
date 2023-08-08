@@ -9,14 +9,16 @@ from model import *
 import dataloader
 from scipy.io import loadmat
 
-REAL_DATASET_TECG = os.path.join(os.path.dirname(os.path.realpath(__file__)), "real_signals_nifeadb_1024windows_NR_07_15_Dec_22/NR_07_ch0")
-REAL_DATASET_AECG = os.path.join(os.path.dirname(os.path.realpath(__file__)), "real_signals_nifeadb_1024windows_NR_07_15_Dec_22/NR_07_ch3")
+#SIMULATED_DATASET = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../AECG/simulated_signals_windows_l1to2_baseline_and_c0to2_11_Oct_22_Ch19_21_23")
+REAL_DATASET_TECG = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../AECG/real_signals_nifeadb_1024windows_NR_10_20_Dec_22/NR_10_ch0")
+REAL_DATASET_AECG = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../AECG/real_signals_nifeadb_1024windows_NR_10_20_Dec_22/NR_10_ch2")
 
-LOSSES = os.path.join(os.path.dirname(os.path.realpath(__file__)), "Losses/Overfit/NR_07/Jan02")
+#LOSSES = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../MasterAECG+MECG/Losses/Ch_19_21_23/mecg2IsShiftedBy1NotNoised")
+LOSSES = os.path.join(os.path.dirname(os.path.realpath(__file__)), "Losses/Overfit/NR_10/TrainAllSet")
 
 BATCH_SIZE = 32
 #epochs = 50
-epochs = 1
+epochs = 100
 learning_rate_real = 1e-5
 learning_rate = 1e-3
 
@@ -29,18 +31,11 @@ def main():
     # (TODO) OVERFIT_REAL: uncomment ALL LINES BELOW after we replace to real data instead of simulated data
     real_dataset = dataloader.RealOverfitDataset(REAL_DATASET_AECG, REAL_DATASET_TECG)
     print("real_dataset",len(real_dataset))
-    train_size_real = int(0.6 * len(real_dataset))
-    val_size_real = int(0.2 * len(real_dataset))
-    test_size_real = int(0.2 * len(real_dataset))
-    #train_dataset_real, val_dataset_real, test_dataset_real = torch.utils.data.random_split(real_dataset, [train_size_real, val_size_real,test_size_real])
+    train_size_real = int(len(real_dataset))
     train_dataset_real = torch.utils.data.Subset(real_dataset, range(train_size_real))
-    val_dataset_real = torch.utils.data.Subset(real_dataset, range(train_size_real, train_size_real + val_size_real))
-    test_dataset_real = torch.utils.data.Subset(real_dataset, range(train_size_real + val_size_real, train_size_real + val_size_real + test_size_real))
 
     # A good rule of thumb is: num_workers = 4 * num_GPU
     train_data_loader_real = data.DataLoader(train_dataset_real, batch_size=BATCH_SIZE, shuffle=False, num_workers=16)  #num_workers=12)
-    val_data_loader_real = data.DataLoader(val_dataset_real, batch_size=BATCH_SIZE, shuffle=False)
-    test_data_loader_real = data.DataLoader(test_dataset_real, batch_size=BATCH_SIZE, shuffle=False)
 
     #  use ALL the available GPUs
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -69,7 +64,6 @@ def main():
     #best_model_accuracy_real = - math.inf
     best_model_accuracy_real = math.inf
 
-    val_loss_real = 0
     criterion = nn.L1Loss().cuda()
     criterion_cent = CenterLoss(num_classes=2, feat_dim=512*64, use_gpu=device)
     params = list(resnet_model.parameters()) + list(criterion_cent.parameters())
@@ -78,13 +72,11 @@ def main():
         np.ceil(len(train_data_loader_real.dataset) / BATCH_SIZE)), epochs=epochs + 1)
 
     train_loss_ecg_list = []
-    validation_loss_ecg_list = []
-    validation_corr_ecg_list = []
 
     for epoch in range(epochs):
         #Train
         resnet_model.train()
-        train_overfit_real(resnet_model,
+        best_model_accuracy_real, train_loss_real =train_overfit_real(resnet_model,
               train_data_loader_real,
               optimizer_model_real,
               epoch,
@@ -92,35 +84,12 @@ def main():
               criterion,
               criterion_cent,
               train_loss_ecg_list,
-              scheduler_real)
-
-        # Validation Real
-        resnet_model.eval()
-        best_model_accuracy_real, val_loss_real = val_overfit_real(
-               val_data_loader_real,
-               resnet_model,
-               criterion,
-               criterion_cent,
-               epoch,
-               epochs,
-               validation_loss_ecg_list,
-               validation_corr_ecg_list,
-               best_model_accuracy_real)
+              scheduler_real,
+            best_model_accuracy_real)
 
     #Saving graphs training
     path_losses = os.path.join(LOSSES, "TL1ECG")
     np.save(path_losses, np.array(train_loss_ecg_list))
-    #Saving graphs validation
-    path_losses = os.path.join(LOSSES, "VL1ECG")
-    np.save(path_losses, np.array(validation_loss_ecg_list))
-    path_losses = os.path.join(LOSSES, "CorrECG")
-    np.save(path_losses, np.array(validation_corr_ecg_list))
-
-    # Test
-    test_loss_ecg, test_corr_ecg = test_overfit_real(str(network_save_folder_real + network_file_name_best_real),
-                                        test_data_loader_real)
-    with open("test_loss.txt", 'w') as f:
-        f.write(",test_loss_ecg = {:.4f},test_corr_ecg = {:.4f}".format(test_loss_ecg, test_corr_ecg))
 
     del resnet_model
     del real_dataset
@@ -149,19 +118,11 @@ if __name__=="__main__":
     main()
     path_losses = os.path.join(LOSSES, "TL1ECG.npy")
     train_loss_m_list = np.load(path_losses)	
-    path_losses = os.path.join(LOSSES, "VL1ECG.npy")	
-    validation_loss_m_list = np.load(path_losses)	
-    path_losses = os.path.join(LOSSES, "CorrECG.npy")		
-    correlation_f_list = np.load(path_losses)	
-    # plotting validation and training losses and saving them	
-    fig, (ax1,ax2) = plt.subplots(2, 1)	
+    # plotting validation and training losses and saving them
+    fig, (ax1) = plt.subplots(1, 1)
     ax1.plot(train_loss_m_list, label="training")	
-    ax1.plot(validation_loss_m_list, label="validation")	
     ax1.set_ylabel("L1 M - ECG")
     ax1.set_xlabel("Epoch")	
-    ax2.plot(correlation_f_list)
-    ax2.set_ylabel("CorrM")
-    ax2.set_xlabel("Epoch")
     plt.show()
     plt.close()
 
