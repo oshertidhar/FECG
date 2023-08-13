@@ -1,12 +1,14 @@
 from ResnetBasics import *
 
 class ResNetEncoder(nn.Module):
+# The Encoder is made of 14 Resnet Basic Block that extracts 2048 features(channels)
+# from the input signal.
+# The output of the Encoder is a Latent Variable vector of these
+# features (both maternal and fetal)
 
-    def __init__(self, in_channels = 1,activation='leaky_relu'):
+    def __init__(self, in_channels=2, activation='leaky_relu'):
         super().__init__()
 
-        self.dropout1 = nn.Dropout(0.3)
-        self.dropout2 = nn.Dropout(0.3)
         self.conv1 = nn.Conv1d(in_channels, 16, kernel_size=3, stride=2, padding=1, bias=False)
         self.batch = nn.BatchNorm1d(16)
         self.relu = activation_func(activation)
@@ -32,22 +34,18 @@ class ResNetEncoder(nn.Module):
         self.block13 = ResNetBasicBlockEncoder(1024, 2048, downsampling=2)
         self.block14 = ResNetBasicBlockEncoder(2048, 2048)
 
-
     def forward(self, x):
-
-
         x = self.conv1(x)
         x = self.batch(x)
         x = self.relu(x)
+
         x = self.block1(x)
         x = self.block2(x)
-        #x = self.dropout1(x)
         x = self.block3(x)
         x = self.block4(x)
         x = self.block5(x)
         x = self.block6(x)
         x = self.block7(x)
-        #x = self.dropout2(x)
         x = self.block8(x)
         x = self.block9(x)
         x = self.block10(x)
@@ -55,6 +53,7 @@ class ResNetEncoder(nn.Module):
         x = self.block12(x)
         x = self.block13(x)
         x = self.block14(x)
+
         return x
 
 
@@ -85,7 +84,6 @@ class ResnetDecoder(nn.Module):
         self.block12 = ResNetBasicBlockDecoder(32, 16)
 
     def forward(self, x):
-
         one_before_last = x
         x = self.block1(x)
         x = self.block2(x)[:, :, :-1]
@@ -104,7 +102,7 @@ class ResnetDecoder(nn.Module):
         return x, one_before_last
 
 class ResNet(nn.Module):
-    def __init__(self, in_channels,*args, **kwargs):
+    def __init__(self, in_channels, *args, **kwargs):
         super().__init__()
         self.encoder = ResNetEncoder(in_channels, *args, **kwargs)
         self.Mdecoder = ResnetDecoder()
@@ -115,6 +113,8 @@ class ResNet(nn.Module):
         latent_half = x.size()[1] // 2
         m = x[:, :latent_half, :]
         f = x[:, latent_half:, :]
+
         m_out, one_before_last_m = self.Mdecoder(m)
         f_out, one_before_last_f = self.Fdecoder(f)
+
         return m_out, one_before_last_m, f_out, one_before_last_f
