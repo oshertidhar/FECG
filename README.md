@@ -8,8 +8,10 @@ https://physionet.org/content/fecgsyndb/1.0.0/
 
 # Branches
 1. OldModel - without injection of TECG
-2. Model Pre-Training on Simulated Data
-3. Model Fine-Tune Training on Real-World Data 
+2. TrainSim:
+   Model Pre-Training on Simulated Data
+4. TrainReal:
+   Model Fine-Tune Training on Real-World Data 
 
 ## How to run
 1. FromDat2Mat.py
@@ -17,6 +19,17 @@ https://physionet.org/content/fecgsyndb/1.0.0/
 3. Main.py
    
 # Train Synthectic Dataset 
+* BRANCH: TrainSim
+1. Download dataset from https://physionet.org/content/fecgsyndb/1.0.0/
+2. If needed, change PHYSIONET_PATH in `main.py, FromDatToMat.py` with the corresponding path where the dataset that was downloaded.
+3. Run in the following order:
+
+  a. FromDatToMat.py
+  b. SimulatedMergingAndWindowing.py
+  c. main.py
+
+# Train Real Dataset 
+* BRANCH: TrainReal
 1. Download dataset from https://physionet.org/content/fecgsyndb/1.0.0/
 2. If needed, change PHYSIONET_PATH in `main.py, FromDatToMat.py` with the corresponding path where the dataset that was downloaded.
 3. Run in the following order:
