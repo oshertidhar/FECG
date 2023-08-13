@@ -9,7 +9,7 @@ from scipy.ndimage.interpolation import shift
 network_file_name_last = "/last_model"
 
 network_file_name_best_sim = "best_model"
-network_load_folder_sim = "../MasterAECG+MECG/Models/Ch_19_21_23/mecg2IsShiftedBy1NotNoised"
+network_load_folder_sim = "./Models/Ch_19_21_23/mecg2IsShiftedBy1NotNoised"
 
 network_save_folder_real = "./Models/Overfit/NR_10/TrainAllSet"
 network_file_name_best_real = "/best_model_real"
