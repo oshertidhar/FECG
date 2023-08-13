@@ -3,21 +3,6 @@ import torch.nn as nn
 import os
 import numpy as np
 import scipy.stats
-from scipy.io import loadmat
-
-SIMULATED_DATASET = os.path.join(os.path.dirname(os.path.realpath(__file__)), "RefactorDataset")
-
-def get_index_snr(snr):
-    if snr == '00':
-        return 0
-    elif snr == '03':
-        return 1
-    elif snr == '06':
-        return 2
-    elif snr == '09':
-        return 3
-    else:
-        return 4
 
 def check_correlation(orig_signal,changed_signal):
     orig = orig_signal
@@ -54,39 +39,16 @@ def criterion_hinge_loss(m_feature,f_feature,delta):
 
 def simulated_database_list(sim_dir):
     list = []
+    signal_given = []
     for filename in os.listdir(sim_dir):
         if 'mix' not in filename:
             continue
-        name = filename[:(filename.find("noise"))]
-        name_mix = filename[:(filename.find("mix"))]
-        index_noise = filename.find('noise') + 5
-        number_of_noise = int(filename[index_noise])
-        index_snr = filename.find('snr') + 3
-        string_of_snr = get_index_snr(filename[index_snr:index_snr+2])
-        number = filename[(filename.find("mix")) + 3:]
-        index_case = filename.find('_c')
-        if(index_case == -1):
-            index_case = 6
+        name = filename[:(filename.find("mix"))]
+        if name not in signal_given:
+            signal_given.append(name);
+            #for ch in [1,3,5,19,21,23]:
+            for i in range(73):
+                list.append([name + 'mix' + str(i), name + 'mecg' + str(i) , name + 'fecg1' + str(i)])
         else:
-            index_case = int(filename[index_case+2])
-        list.append([name_mix + 'mix' + str(number), name + 'mecg' + str(number), name + 'fecg1' + str(number), number_of_noise, string_of_snr,index_case])
+            continue
     return list
-
-def remove_nan_signals(list_signals):
-    for idx,signal_tuple in enumerate(list_signals):
-        is_nan = False
-        i = 0
-        for signal_name in signal_tuple:
-            i += 1
-            path = os.path.join(SIMULATED_DATASET,signal_name)
-            signal = loadmat(path)['data']
-            is_nan = np.any(np.isnan(signal))
-            if(is_nan):
-                print(list_signals[idx])
-                list_signals = np.delete(list_signals,idx)
-                break
-            if(i == 3):
-                break
-    return list_signals
-
-
