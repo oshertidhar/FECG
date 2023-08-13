@@ -17,6 +17,25 @@ class RealDataset(Dataset):
         return signal
 
 
+class RealOverfitDataset(Dataset):
+    def __init__(self, real_AECG_dir, real_TECG_dir):
+        self.real_AECG_dir = real_AECG_dir
+        self.real_AECG_signals = sorted(os.listdir(real_AECG_dir))
+        self.real_TECG_dir = real_TECG_dir
+        self.real_TECG_signals = sorted(os.listdir(real_TECG_dir))
+
+    def __len__(self):
+        return len(self.real_AECG_signals)# + len(self.real_TECG_signals)
+
+    def __getitem__(self, idx):
+        #print(idx)
+        path_signal_AECG = os.path.join(self.real_AECG_dir, self.real_AECG_signals[idx])
+        signal_AECG = torch.from_numpy(loadmat(path_signal_AECG)['data'])
+        path_signal_TECG = os.path.join(self.real_TECG_dir, self.real_TECG_signals[idx])
+        signal_TECG = torch.from_numpy(loadmat(path_signal_TECG)['data'])
+        return signal_AECG, signal_TECG
+
+
 class SimulatedDataset(Dataset):
     def __init__(self, simulated_dir, list):
         self.simulated_dir = simulated_dir
@@ -29,10 +48,7 @@ class SimulatedDataset(Dataset):
         path_mix = os.path.join(self.simulated_dir, self.simulated_signals[idx][0])
         path_mecg = os.path.join(self.simulated_dir, self.simulated_signals[idx][1])
         path_fecg = os.path.join(self.simulated_dir, self.simulated_signals[idx][2])
-        number_of_noise = self.simulated_signals[idx][3]
-        number_snr = self.simulated_signals[idx][4]
-        number_case = self.simulated_signals[idx][5]
         mix = torch.from_numpy(loadmat(path_mix)['data'])
         mecg = torch.from_numpy(loadmat(path_mecg)['data'])
         fecg = torch.from_numpy(loadmat(path_fecg)['data'])
-        return mix, mecg, fecg, path_mix , path_mecg, path_fecg , number_of_noise, number_snr, number_case
+        return mix, mecg, fecg
