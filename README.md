@@ -7,10 +7,10 @@ M.Sc Final Project @ TAU. Created By Osher Tidhar
 https://physionet.org/content/fecgsyndb/1.0.0/
 
 # Branches
-1. OldModel - without injection of TECG (See OldInjectionScheme.png)
-2. TrainSim: (See NewInjectionScheme.png)
+1. **OldModel** - without injection of TECG (See OldInjectionScheme.png)
+2. **TrainSim**: (See NewInjectionScheme.png)
    Model Pre-Training on Simulated Data
-3. TrainReal: (See NewInjectionScheme.png)
+3. **TrainReal**: (See NewInjectionScheme.png)
    Model Fine-Tune Training on Real-World Data 
 
 ## How to run
