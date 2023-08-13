@@ -20,6 +20,7 @@ https://physionet.org/content/fecgsyndb/1.0.0/
 1. Download dataset from https://physionet.org/content/fecgsyndb/1.0.0/
 2. If needed, change PHYSIONET_PATH in `main.py, FromDatToMat.py` with the corresponding path where the dataset that was downloaded.
 3. Run in the following order:
+
   a. FromDatToMat.py
   b. SimulatedMergingAndWindowing.py
   c. main.py
